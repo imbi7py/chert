@@ -72,6 +72,39 @@ def canonicalize_links(text, domain, filename):
     return _rel_link_re.sub(_replace_rel_link, text)
 
 
+def canonicalize_links_tree(html_tree, domain, filename):
+    c_url = URL.from_text(domain)
+    if not c_url.scheme:
+        try:
+            c_url = URL.from_text('http://' + domain)
+        except ValueError:
+            raise ValueError('invalid canonical domain: %r'
+                             % domain)
+    c_scheme = c_url.scheme
+    c_domain = c_url.host
+
+    for el in html_tree.iter():
+        if not isinstance(el.tag, basestring):
+            continue
+        if not el.tag == 'a':
+            continue
+
+        href = el.get('href')
+        if not href:
+            continue
+        try:
+            orig_url = URL.from_text(href)
+        except ValueError:
+            print 'broke:', href
+            continue  # TODO: log
+        print orig_url, orig_url.path
+        if orig_url.scheme:
+            continue
+
+        import pdb;pdb.set_trace()
+    return
+
+
 def retarget_links(html_tree, mode='external'):
     if mode == 'none':
         return
